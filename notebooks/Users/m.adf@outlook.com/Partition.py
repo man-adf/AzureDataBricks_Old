@@ -1,9 +1,9 @@
 # Databricks notebook source
-from pyspark.sql.functions import*
+from pyspark.sql import*
 from datetime import*
 from databricks import*
 from pyspark.sql.types import*
-from pyspark.sql.window import*
+from pyspark.sql.functions import*
 
 # COMMAND ----------
 
@@ -31,19 +31,27 @@ df.display()
 
 # COMMAND ----------
 
-Wind = Window.partitionBy("Dept").orderBy("salary")
+Wind = Window.partitionBy("Dept").orderBy("Salary")
 
 # COMMAND ----------
 
-df = df.withColumn("Rank",rank().over(Wind)).withColumn("DenseRank",dense_rank().over(Wind)).withColumn("RowNum",row_number().over(Wind)).withColumn("PercentRank",percent_rank().over(Wind)).withColumn("CumulativeDist",cume_dist().over(Wind)).withColumn("nTile",ntile(2).over(Wind))
+df1 = df.withColumn("Avg", avg(col("Salary")).over(Wind)).withColumn("Sum", sum(col("Salary")).over(Wind)).withColumn("Min", min(col("Salary")).over(Wind)).withColumn("Max", max(col("Salary")).over(Wind))
 
 # COMMAND ----------
 
-df.display()
+df1.display()
 
 # COMMAND ----------
 
-df.write.jdbc(url=url, table="PartBySpark", mode="overwrite", properties=properties)
+df2 = df.withColumn("Rank",rank().over(Wind)).withColumn("DenseRank",dense_rank().over(Wind)).withColumn("RowNum",row_number().over(Wind)).withColumn("PercentRank",percent_rank().over(Wind)).withColumn("CumulativeDist",cume_dist().over(Wind)).withColumn("nTile",ntile(2).over(Wind))
+
+# COMMAND ----------
+
+df2.display()
+
+# COMMAND ----------
+
+df2.write.jdbc(url=url, table="PartBySpark", mode="overwrite", properties=properties)
 
 # COMMAND ----------
 
